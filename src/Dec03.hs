@@ -31,8 +31,8 @@ day03answer1 = l1dist (spiralpos 1) (spiralpos 277678)
 
 type Grid = M.Map Pos Integer
 
-builtgrid :: Int -> Grid
-builtgrid x = foldl mupdate sgrid (take x summoves)
+builtgrids :: [Grid]
+builtgrids = scanl mupdate sgrid summoves
   where
     mfind :: Grid -> Pos -> Integer
     mfind grid pos = sum $ fmap (flip (M.findWithDefault 0) grid) $ choosepos pos
@@ -49,7 +49,7 @@ builtgrid x = foldl mupdate sgrid (take x summoves)
         funcs = [(subtract 1), id, (+ 1)]
 
 maxgridvals :: [Integer]
-maxgridvals = fmap (\x -> M.foldr max 0 (builtgrid x)) [1..]
+maxgridvals = fmap (M.foldr max 0) builtgrids
 
 day03func2 val = head $ filter (> val) maxgridvals
 day03answer2 = day03func2 277678
