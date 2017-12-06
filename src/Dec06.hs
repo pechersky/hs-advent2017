@@ -41,14 +41,14 @@ getMax xmap = M.foldlWithKey keyCompare ((head . M.toList) xmap) xmap
       | otherwise = (ok, oa)
 
 expandstates :: M.Map Int Int -> [String]
-expandstates xmap = go startval startpos 0 [] xmap
+expandstates xmap = go startval startpos [] xmap
   where
     (startpos, startval) = getMax xmap
 
-    go :: Int -> Int -> Int -> [String] -> M.Map Int Int -> [String]
-    go !val !pos !count !pastlists !list
+    go :: Int -> Int -> [String] -> M.Map Int Int -> [String]
+    go !val !pos !pastlists !list
       | strlist `elem` pastlists = pastlists ++ [strlist]
-      | otherwise = go newval newpos (count + 1) (pastlists ++ [strlist]) newlist
+      | otherwise = go newval newpos (pastlists ++ [strlist]) newlist
         where
           newlist = loop val pos (M.adjust (const 0) pos list)
           (newpos, newval) = getMax newlist
