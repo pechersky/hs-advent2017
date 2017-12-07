@@ -1,12 +1,12 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE DeriveFoldable #-}
 
 module Dec07 where
 
 import Data.List
 import Data.Ord
+import Data.Tree (Tree (Node))
+import qualified Data.Tree as TR
 import qualified Data.Text as T
 import qualified Data.Map.Strict as M
 
@@ -16,94 +16,85 @@ day07file = "src/day07input1.txt"
 txtdata07 :: IO String
 txtdata07 = readFile day07file
 
-data TowerNode = TowerNode T.Text Int [T.Text]
+data TextNode = TextNode {_tnname :: T.Text, _tnweight :: Int, _tnchildren :: [T.Text]}
   deriving (Show, Eq, Ord)
 
-data Tree a = Nil | Node a [Tree a]
-  deriving (Show, Eq, Ord, Foldable)
+type TextTower = M.Map TextNode [TextNode]
+type Disc = Tree (T.Text, Int)
 
-type Tower = M.Map TowerNode [TowerNode]
+-- could probably improve this with lenses
+_name :: Disc -> T.Text
+_name (Node (name, _) _) = name
 
+_weight :: Disc -> Int
+_weight (Node (_, weight) _) = weight
+
+_nodes :: Disc -> [Disc]
+_nodes (Node (_, _) nodes) = nodes
+
+minput :: IO [TextNode]
 minput = fmap ((fmap (finish . break)) . rows . T.pack) txtdata07
   where
     rows :: T.Text -> [T.Text]
     rows = T.lines
 
-    {-break :: T.Text -> (T.Text, T.Text)-}
     break = T.breakOn " -> "
 
-    finish (astr, bstr) = TowerNode (name astr) (weight astr) (children bstr)
-    name astr = T.strip $ fst $ T.breakOn " " astr
-    weight astr = read @Int $ T.unpack $ T.filter (`elem` digits) $ snd $ T.breakOn " " astr
-    children bstr
+    finish (astr, bstr) = TextNode (pname astr) (pweight astr) (pchildren bstr)
+    pname astr = T.strip $ fst $ T.breakOn " " astr
+    pweight astr = read @Int $ T.unpack $ T.filter (`elem` digits) $ snd $ T.breakOn " " astr
+    pchildren bstr
       | bstr == "" = []
       | otherwise = tail $ T.words $ T.filter (/= ',') bstr
     digits = "0123456789" :: [Char]
 
-
-buildsemiTower :: [TowerNode] -> M.Map T.Text TowerNode
-buildsemiTower xs = M.fromList towerlist
+buildNodeTree :: [TextNode] -> M.Map T.Text Disc
+buildNodeTree xs = M.mapWithKey (\k _ -> get k) xmap
   where
-    towerlist = fmap (\tnode@(TowerNode name weight children) -> (name, tnode)) xs
+    towerlist :: [(T.Text, TextNode)]
+    towerlist = fmap (\tnode -> (_tnname tnode, tnode)) xs
 
-buildTower :: M.Map T.Text TowerNode -> Tower
-buildTower xmap = finalmap
-  where
-    nodemap :: M.Map TowerNode TowerNode
-    nodemap = M.mapKeys (xmap M.!) xmap
-    finalmap :: M.Map TowerNode [TowerNode]
-    finalmap = M.map getChildren nodemap
-    getChildren :: TowerNode -> [TowerNode]
-    getChildren pnode@(TowerNode _ _ children) = fmap (xmap M.!) children
+    xmap :: M.Map T.Text TextNode
+    xmap = M.fromList towerlist
 
-buildNodeTree :: Tower -> M.Map TowerNode (Tree (T.Text, Int))
-buildNodeTree xmap = M.mapWithKey func xmap
-  where
-    func :: TowerNode -> [TowerNode] -> Tree (T.Text, Int)
-    func tnode@(TowerNode name weight _) tnodes = Node (name, weight) (fmap go tnodes)
-    go :: TowerNode -> Tree (T.Text, Int)
-    go tnode = func tnode (xmap M.! tnode)
+    getNode :: T.Text -> TextNode
+    getNode = (xmap M.!)
 
-{-buildTree :: M.Map TowerNode (Tree (T.Text, Int)) -> Tree (T.Text, Int)-}
-{-buildTree nodemap = M.foldrWithKey' fold_ nodemap-}
-  {-where-}
-    {-fold_ :: TowerNode -> [TowerNode] -> -}
+    getChildren :: TextNode -> [TextNode]
+    getChildren pnode = fmap getNode (_tnchildren pnode)
 
-extractname :: Tree (T.Text, Int) -> T.Text
-extractname Nil = ""
-extractname (Node (name, weight) nodes) = name
+    expand :: T.Text -> ((T.Text, Int), [T.Text])
+    expand nodename = ((_tnname tnode, _tnweight tnode), (_tnchildren tnode))
+      where
+        tnode = xmap M.! nodename
 
-sumweight :: Tree (T.Text, Int) -> Int
-sumweight Nil = 0
-sumweight (Node (_, weight) nodes) = weight + sum (fmap sumweight nodes)
+    get :: T.Text -> Disc
+    get nodename = TR.unfoldTree expand nodename
 
-balanced :: Tree (T.Text, Int) -> Bool
-balanced Nil = True
+sumweight :: Disc -> Int
+sumweight node = _weight node + sum (fmap sumweight (_nodes node))
+
+balanced :: Disc -> Bool
 balanced tnode@(Node (_, weight) nodes) = length nubweights <= 1
   where
     nubweights = nub (nodeweights tnode)
 
-balancedChildren :: Tree (T.Text, Int) -> [Bool]
-balancedChildren Nil = [True]
+balancedChildren :: Disc -> [Bool]
 balancedChildren tnode@(Node (_, weight) nodes) = (fmap balanced nodes)
 
-nodeweights :: Tree (T.Text, Int) -> [Int]
-nodeweights Nil = []
+nodeweights :: Disc -> [Int]
 nodeweights (Node (_, weight) nodes) = fmap sumweight nodes
 
-nodeweightsAndSelf :: Tree (T.Text, Int) -> (Int, [Int])
-nodeweightsAndSelf Nil = (0, [])
+nodeweightsAndSelf :: Disc -> (Int, [Int])
 nodeweightsAndSelf (Node (_, weight) nodes) = (weight, fmap sumweight nodes)
 
-mismatches :: [Tree (T.Text, Int)] -> [Tree (T.Text, Int)]
+mismatches :: [Disc] -> [Disc]
 mismatches = filter (not . balanced)
 
-selfweight :: Tree (T.Text, Int) -> Int
-selfweight Nil = 0
+selfweight :: Disc -> Int
 selfweight tnode@(Node (_, weight) _) = weight
 
-{-shiftedweight :: Tree (T.Text, Int) -> Int-}
-shiftedweight Nil = (0, 0)
+{-shiftedweight :: Disc -> Int-}
 shiftedweight tnode@(Node (_, weight) nodes) = shift
   where
     sumw = nodeweights tnode
@@ -118,16 +109,12 @@ shiftedweight tnode@(Node (_, weight) nodes) = shift
 
 day07answer1 = do
   input <- minput
-  let semitower = buildsemiTower input
-  let tower = buildTower semitower
-  let treemap = buildNodeTree tower
+  let treemap = buildNodeTree input
   let bigtree = maximumBy (comparing length) $ M.elems treemap
-  return $ extractname bigtree
+  return $ _name bigtree
 
 day07answer2 = do
   input <- minput
-  let semitower = buildsemiTower input
-  let tower = buildTower semitower
-  let treemap = buildNodeTree tower
+  let treemap = buildNodeTree input
   let answer = snd $ minimumBy (comparing fst) $ fmap shiftedweight $ mismatches $ M.elems treemap
   return answer
