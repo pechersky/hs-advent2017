@@ -59,6 +59,8 @@ runInstruction (Instruction (Command rn mf mv) (Condition cn cmp cv)) bank = upd
 runInstructions :: [Instruction] -> Bank
 runInstructions = foldl' (flip runInstruction) M.empty
 
+-- according to mstksg, could be done with scanl'
+-- I like the explicitness of how we're passing around the max value
 runInstructionsWithMem :: [Instruction] -> (Bank, Value)
 runInstructionsWithMem = foldl' f (M.empty, 0)
   where
