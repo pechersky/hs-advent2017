@@ -69,8 +69,7 @@ runInstructionsWithMem = foldl' f (M.empty, 0)
 day08answer1 = do
   input <- minput
   let runs = runInstructions input
-  let maxval = (head . sortOn negate . M.elems) runs
-  return $ maxval
+  return $ maximum runs
 
 day08answer2 = do
   input <- minput
