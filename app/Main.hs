@@ -8,6 +8,7 @@ import Dec04
 import Dec05
 import Dec06
 import Dec07
+import Dec08
 
 main :: IO ()
 main = someFunc
