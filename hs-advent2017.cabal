@@ -23,6 +23,7 @@ library
   build-depends:       base >= 4.7 && < 5
                      , text
                      , containers
+                     , parsec
   default-language:    Haskell2010
 
 executable hs-advent2017-exe
