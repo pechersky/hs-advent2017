@@ -39,7 +39,10 @@ groupParser = TGarbage  <$> garbage
           <|> TNode     <$> ingroup
   where
     ingroup = between (char '{') (char '}') $ many groupParser
-    garbage = between (char '<') (char '>') $ many (TTerminal <$> noneOf "<>")
+    garbage = do
+      char '<';
+      terms <- manyTill (TTerminal <$> anyChar) (try (char '>')) <* notFollowedBy (char '>');
+      return terms
     outgroup = noneOf "{}"
 
 scoreNodes :: TGroup -> Int
