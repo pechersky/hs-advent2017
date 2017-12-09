@@ -21,7 +21,7 @@ txtdata09 = readFile day09file
 type TChar = Char
 type TWord = [Char]
 
-data TGroup = TNode TChar [TGroup] TChar | TGarbage TChar TWord | TTerminal TChar
+data TGroup = TNode [TGroup] | TGarbage [TGroup] | TTerminal TChar
   deriving Show
 
 applyP :: Parsec String () a -> String -> Either ParseError a
@@ -34,24 +34,26 @@ sanitize (a:xs)
   | otherwise = a:(sanitize xs)
 
 groupParser :: Parsec String st TGroup
-groupParser = garbage <|> outgroup <|> ingroup
+groupParser = TGarbage  <$> garbage
+          <|> TTerminal <$> outgroup
+          <|> TNode     <$> ingroup
   where
-    ingroup = TNode <$> char '{' <*> many groupParser <*> char '}'
-    garbage = TGarbage <$> char '<' <*> manyTill anyChar (try (char '>')) <* notFollowedBy (char '>')
-    outgroup = TTerminal <$> (noneOf "{}")
+    ingroup = between (char '{') (char '}') $ many groupParser
+    garbage = between (char '<') (char '>') $ many (TTerminal <$> noneOf "<>")
+    outgroup = noneOf "{}"
 
 scoreNodes :: TGroup -> Int
 scoreNodes = scoreNodes' 1
   where
     scoreNodes' :: Int -> TGroup -> Int
     scoreNodes' score tgroup = case tgroup of
-      TNode _ xs _ -> score + sum ((fmap (scoreNodes' (score + 1))) xs)
+      TNode xs -> score + sum ((fmap (scoreNodes' (score + 1))) xs)
       _ -> 0
 
 sizeGarbage :: TGroup -> Int
 sizeGarbage tgroup = case tgroup of
-  TNode _ xs _ -> sum (fmap sizeGarbage xs)
-  TGarbage _ garbage -> length garbage
+  TNode xs         -> sum (fmap sizeGarbage xs)
+  TGarbage garbage -> length garbage
   _ -> 0
 
 minput :: IO [String]
