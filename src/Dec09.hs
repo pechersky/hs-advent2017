@@ -48,13 +48,13 @@ scoreNodes = scoreNodes' 1
     scoreNodes' :: Int -> TGroup -> Int
     scoreNodes' score tgroup = case tgroup of
       TNode xs -> score + sum ((fmap (scoreNodes' (score + 1))) xs)
-      _ -> 0
+      _        -> 0
 
 sizeGarbage :: TGroup -> Int
 sizeGarbage tgroup = case tgroup of
   TNode xs         -> sum (fmap sizeGarbage xs)
   TGarbage garbage -> length garbage
-  _ -> 0
+  _                -> 0
 
 minput :: IO [String]
 minput = fmap (lines) txtdata09
@@ -65,4 +65,4 @@ day09answer1 = do
 
 day09answer2 = do
   input <- minput
-  return $ either (error. show) id . fmap sizeGarbage . applyP groupParser . sanitize . head $ input
+  return $ either (error . show) id . fmap sizeGarbage . applyP groupParser . sanitize . head $ input
