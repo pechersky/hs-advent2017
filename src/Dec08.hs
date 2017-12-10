@@ -7,6 +7,8 @@ module Dec08 where
 import Data.List
 import Data.Ord
 import qualified Data.Map.Strict as M
+import Control.Monad.Trans.State.Strict
+import Control.Monad
 
 day08file :: String
 day08file = "src/day08input1.txt"
@@ -47,33 +49,28 @@ parseLine = parseWords . words
           | cmp == "!=" = (/=)
           | otherwise   = (\_ _ -> False)
 
-runInstruction :: Instruction -> Bank -> Bank
-runInstruction (Instruction (Command rn mf mv) (Condition cn cmp cv)) bank = update rn bank
+-- run the instruction in a State that keeps the maximum Value
+-- this could be faster for huge Instruction lists, in that we now
+-- only check registers that we have modified, instead of all registers
+runInstructionM :: Instruction -> Bank -> State Value Bank
+runInstructionM (Instruction (Command rn mf mv) (Condition cn cmp cv)) bank = case (access cn `cmp` cv) of
+  False -> return bank
+  True  -> do
+    modify' (max updatedVal)
+    return $ M.insert rn updatedVal bank
   where
     access regname = M.findWithDefault 0 regname bank
-    update regname = M.alter command regname
-    command pval = case (access cn `cmp` cv) of
-      False -> pval
-      True -> Just $ access rn `mf` mv
+    updatedVal = access rn `mf` mv
 
-runInstructions :: [Instruction] -> Bank
-runInstructions = foldl' (flip runInstruction) M.empty
-
--- according to mstksg, could be done with scanl'
--- I like the explicitness of how we're passing around the max value
-runInstructionsWithMem :: [Instruction] -> (Bank, Value)
-runInstructionsWithMem = foldl' f (M.empty, 0)
-  where
-    f (bank, val) instr = (newbank, max val (maximum $ 0:(M.elems newbank)))
-      where
-        newbank = runInstruction instr bank
+runInstructionsM :: [Instruction] -> State Value Bank
+runInstructionsM = foldM (flip runInstructionM) M.empty
 
 day08answer1 = do
   input <- minput
-  let runs = runInstructions input
-  return $ maximum runs
+  let runs = runInstructionsM input
+  return $ maximum $ evalState runs 0
 
 day08answer2 = do
   input <- minput
-  let runs = runInstructionsWithMem input
-  return $ snd runs
+  let runs = runInstructionsM input
+  return $ execState runs 0
