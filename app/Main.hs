@@ -10,6 +10,7 @@ import Dec07
 import Dec08
 import Dec09
 import Dec10
+import Dec11
 
 main :: IO ()
 main = return ()
