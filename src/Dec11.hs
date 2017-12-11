@@ -1,13 +1,7 @@
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE TupleSections #-}
-{-# LANGUAGE FlexibleContexts #-}
-
 module Dec11 where
 
 import Data.List
 import Data.List.Split
-import qualified Data.Map.Strict as M
 
 day11file :: String
 day11file = "src/day11input1.txt"
