@@ -33,8 +33,14 @@ toMove move
 summoves :: [Pos] -> [Pos]
 summoves = scanl' (\(a,b) (c,d) -> (a+c,b+d)) (0,0)
 
+-- need to consider case of "ne,se"
 l1dist :: Pos -> Integer
-l1dist (x0, y0) = (abs y0 + abs x0) `div` 2
+l1dist (x, y)
+  | ax <= ay = (ax + ay) `div` 2
+  | otherwise = ax + ay
+  where
+    ax = abs x
+    ay = abs y
 
 day11answer1 = do
   input <- minput
