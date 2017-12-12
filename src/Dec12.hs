@@ -21,6 +21,7 @@ parseInput (ix:_:xs) = (read ix, fmap (read . filter isDigit) xs)
 connections :: [(Int, [Int])] -> M.Map Int [Int]
 connections = M.fromList
 
+collect :: Int -> M.Map Int [Int] -> [S.Set Int]
 collect val connect = iterate go (S.singleton val)
   where
   go :: S.Set Int -> S.Set Int
@@ -28,6 +29,7 @@ collect val connect = iterate go (S.singleton val)
     where
       newkeys = S.fromList $ concatMap (connect M.!) keys
 
+endGroup :: [S.Set Int] -> S.Set Int
 endGroup colllist = fst . head . dropWhile (\(xs, ys) -> S.size xs /= S.size ys) $ zip colllist (drop 1 colllist)
 
 day12answer1 = do
