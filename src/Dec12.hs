@@ -21,15 +21,12 @@ parseInput (ix:_:xs) = (read ix, fmap (read . filter isDigit) xs)
 connections :: [(Int, [Int])] -> M.Map Int [Int]
 connections = M.fromList
 
-collect val connect = unfoldr go (S.singleton val)
+collect val connect = iterate go (S.singleton val)
   where
-  go :: S.Set Int -> Maybe (S.Set Int, S.Set Int)
-  go keys
-    {-| S.size diffkeys == 0 = Nothing-}
-    | otherwise = Just (keys, newkeys)
+  go :: S.Set Int -> S.Set Int
+  go keys = newkeys `S.union` keys
     where
-      newkeys = S.fromList (S.toList keys ++ (concatMap (connect M.!) keys))
-      diffkeys = newkeys S.\\ keys
+      newkeys = S.fromList $ concatMap (connect M.!) keys
 
 endGroup colllist = fst . head . dropWhile (\(xs, ys) -> S.size xs /= S.size ys) $ zip colllist (drop 1 colllist)
 
