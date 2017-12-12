@@ -21,13 +21,13 @@ type Step = Diff V2 Integer
 
 toMove :: String -> Step
 toMove move
-  | move == "n" = V2 (0) (2)
-  | move == "s" = V2 (0) (-2)
-  | move == "ne" = V2 (1) (1)
-  | move == "se" = V2 (1) (-1)
-  | move == "nw" = V2 (-1) (1)
+  | move == "n"  = V2 ( 0) ( 2)
+  | move == "s"  = V2 ( 0) (-2)
+  | move == "ne" = V2 ( 1) ( 1)
+  | move == "se" = V2 ( 1) (-1)
+  | move == "nw" = V2 (-1) ( 1)
   | move == "sw" = V2 (-1) (-1)
-  | otherwise    = V2 (0) (0)
+  | otherwise    = V2 ( 0) ( 0)
 
 summoves :: [Step] -> [Pos]
 summoves = scanl' (.+^) origin
@@ -35,7 +35,7 @@ summoves = scanl' (.+^) origin
 -- need to consider case of "ne,se"
 l1dist :: Pos -> Integer
 l1dist point@(unP->V2 x y)
-  | ax < ay = sum (fmap abs point) `div` 2
+  | ax < ay   = sum (fmap abs point) `div` 2
   | otherwise = sum (fmap abs point)
   where
     ax = abs x
@@ -43,9 +43,8 @@ l1dist point@(unP->V2 x y)
 
 day11answer1 = do
   input <- minput
-  return $ fmap (last . fmap l1dist . summoves . fmap toMove) $ input
-  {-return $ fmap (last . summoves . fmap toMove) $ input-}
+  return $ last . fmap (last . fmap l1dist . summoves . fmap toMove) $ input
 
-{-day11answer2 = do-}
-  {-input <- minput-}
-  {-return $ fmap (maximum . fmap l1dist . summoves . fmap toMove) $ input-}
+day11answer2 = do
+  input <- minput
+  return $ last . fmap (maximum . fmap l1dist . summoves . fmap toMove) $ input
