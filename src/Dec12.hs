@@ -32,8 +32,8 @@ endGroup colllist = fst . head . dropWhile (\(xs, ys) -> S.size xs /= S.size ys)
 
 day12answer1 = do
   input <- minput
-  let group = collect 0 . connections . fmap parseInput $ input
-  return $ S.size . endGroup $ group
+  let startMap = connections . fmap parseInput $ input
+  return $ S.size . endGroup . collect 0 $ startMap
 
 day12answer2 = do
   input <- minput
