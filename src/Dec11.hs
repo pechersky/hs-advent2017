@@ -1,7 +1,11 @@
+{-# LANGUAGE ViewPatterns #-}
+
 module Dec11 where
 
 import Data.List
 import Data.List.Split
+import Linear.Affine
+import Linear.V2
 
 day11file :: String
 day11file = "src/day11input1.txt"
@@ -12,26 +16,27 @@ txtdata11 = readFile day11file
 minput :: IO [[String]]
 minput = fmap (fmap (splitOn ",") . lines) txtdata11
 
-type Pos = (Integer, Integer)
+type Pos = Point V2 Integer
+type Step = Diff V2 Integer
 
-toMove :: String -> Pos
+toMove :: String -> Step
 toMove move
-  | move == "n" = (0, 2)
-  | move == "s" = (0, -2)
-  | move == "ne" = (1, 1)
-  | move == "nw" = (-1, 1)
-  | move == "se" = (1, -1)
-  | move == "sw" = (-1, -1)
-  | otherwise    = (0, 0)
+  | move == "n" = V2 (0) (2)
+  | move == "s" = V2 (0) (-2)
+  | move == "ne" = V2 (1) (1)
+  | move == "se" = V2 (1) (-1)
+  | move == "nw" = V2 (-1) (1)
+  | move == "sw" = V2 (-1) (-1)
+  | otherwise    = V2 (0) (0)
 
-summoves :: [Pos] -> [Pos]
-summoves = scanl' (\(a,b) (c,d) -> (a+c,b+d)) (0,0)
+summoves :: [Step] -> [Pos]
+summoves = scanl' (.+^) origin
 
 -- need to consider case of "ne,se"
 l1dist :: Pos -> Integer
-l1dist (x, y)
-  | ax <= ay = (ax + ay) `div` 2
-  | otherwise = ax + ay
+l1dist point@(unP->V2 x y)
+  | ax < ay = sum (fmap abs point) `div` 2
+  | otherwise = sum (fmap abs point)
   where
     ax = abs x
     ay = abs y
@@ -39,7 +44,8 @@ l1dist (x, y)
 day11answer1 = do
   input <- minput
   return $ fmap (last . fmap l1dist . summoves . fmap toMove) $ input
+  {-return $ fmap (last . summoves . fmap toMove) $ input-}
 
-day11answer2 = do
-  input <- minput
-  return $ fmap (maximum . fmap l1dist . summoves . fmap toMove) $ input
+{-day11answer2 = do-}
+  {-input <- minput-}
+  {-return $ fmap (maximum . fmap l1dist . summoves . fmap toMove) $ input-}
