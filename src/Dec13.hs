@@ -1,17 +1,7 @@
-{-# LANGUAGE BangPatterns #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TupleSections #-}
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE ViewPatterns #-}
-
 module Dec13 where
 
 import Data.List
-import Data.List.Split
 import Data.Char
-import qualified Data.Map.Strict as M
-import qualified Data.Set as S
 
 day13file :: String
 day13file = "src/day13input1.txt"
