@@ -60,10 +60,4 @@ day10answer1 = do
 
 day10answer2 = do
   input <- minput
-  return $ concat
-         . fmap (toHex . foldl1 xor)
-         . chunksOf 16
-         . fst . fst
-         . hashfold
-         . concat . replicate 64
-         . toCodes $ input
+  return $ knothash $ input
