@@ -25,13 +25,16 @@ toBits str = pad '0' 4 $ showIntAtBase 2 intToDigit int ""
   where
     int = (fst . head . readHex) str
 
-travel :: Int -> [(Int, Int)]
+type Index = Int
+type Pos = (Int, Int)
+
+travel :: Int -> [Pos]
 travel maxval = concat [[(x,y-x) | x <- [0..y], x <= maxval, (y-x) <= maxval] | y <- [0..2*maxval]]
 
-nodes :: Int -> [(Int, (Int, Int))]
+nodes :: Int -> [(Index, Pos)]
 nodes maxval = zip [0..] (travel maxval)
 
-gnodes :: Int -> [[Char]] -> [(Int, (Int, Int), [(Int, Int)])]
+gnodes :: Int -> [[Char]] -> [(Index, Pos, [Pos])]
 gnodes maxval grid = fmap go (nodes maxval)
   where
     go (i,(x,y)) = (i, (x,y), keepnodes (x,y))
