@@ -3,6 +3,7 @@ module Dec14 where
 import Data.List
 import Data.Char
 import Numeric
+import Data.Maybe
 import Data.Graph
 
 import Dec10 (knothash)
@@ -34,15 +35,15 @@ travel maxval = concat [[(x,y-x) | x <- [0..y], x <= maxval, (y-x) <= maxval] | 
 nodes :: Int -> [(Index, Pos)]
 nodes maxval = zip [0..] (travel maxval)
 
-gnodes :: Int -> [[Char]] -> [(Index, Pos, [Pos])]
+gnodes :: Int -> [[Char]] -> [Maybe (Index, Pos, [Pos])]
 gnodes maxval grid = fmap go (nodes maxval)
   where
-    go (i,(x,y)) = (i, (x,y), keepnodes (x,y))
+    go (i,(x,y))
+      | grid !! y !! x == '0' = Nothing
+      | otherwise = Just (i, (x,y), keepnodes (x,y))
     neighbors (x,y) = filter (\(vx,vy) -> vx >= 0 && vx <= maxval && vy >= 0 && vy <= maxval) [(x,y), (x+1,y), (x-1,y), (x,y+1), (x,y-1)]
-    keepnodes (x,y)
-      | grid !! y !! x == '0' = []
-      | otherwise = filter (\(vx,vy) -> (grid !! vy !! vx) /= '0') (neighbors (x,y))
+    keepnodes (x,y) = filter (\(vx,vy) -> (grid !! vy !! vx) /= '0') (neighbors (x,y))
 
 day14answer1 = sum $ fmap (length . filter (== '1')) $ hash input
 
-day14answer2 = length . stronglyConnComp . filter (\(ix,pos,xs) -> xs /= []) $ gnodes 127 $ hash input
+day14answer2 = length . stronglyConnComp . catMaybes $ gnodes 127 $ hash input
