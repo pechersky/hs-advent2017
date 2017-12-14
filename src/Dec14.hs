@@ -7,23 +7,31 @@ import Data.Graph
 
 import Dec10 (knothash)
 
+input :: String
 {-input = "flqrgnkx"-}
 input = "hxtvlmkl"
 
+hash :: String -> [[Char]]
 hash inp = fmap (concat . fmap (toBits . \a -> [a]) . knothash . parthash) $ zip (repeat inp) [0..127]
 
+parthash :: (String, Int) -> String
 parthash (inp,int) = inp ++ "-" ++ show int
 
+pad :: Char -> Int -> String -> String
 pad c l str = replicate (l - length str) '0' ++ str
 
+toBits :: String -> String
 toBits str = pad '0' 4 $ showIntAtBase 2 intToDigit int ""
   where
     int = (fst . head . readHex) str
 
+travel :: Int -> [(Int, Int)]
 travel maxval = concat [[(x,y-x) | x <- [0..y], x <= maxval, (y-x) <= maxval] | y <- [0..2*maxval]]
 
+nodes :: Int -> [(Int, (Int, Int))]
 nodes maxval = zip [0..] (travel maxval)
 
+gnodes :: Int -> [[Char]] -> [(Int, (Int, Int), [(Int, Int)])]
 gnodes maxval grid = fmap go (nodes maxval)
   where
     go (i,(x,y)) = (i, (x,y), keepnodes (x,y))
