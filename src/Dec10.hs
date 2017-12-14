@@ -46,6 +46,14 @@ hashfold = foldl' ((uncurry . uncurry) rehash) startval
   where
     startval = (([0..255], 0), 0)
 
+knothash str = concat
+         . fmap (toHex . foldl1 xor)
+         . chunksOf 16
+         . fst . fst
+         . hashfold
+         . concat . replicate 64
+         . toCodes $ str
+
 day10answer1 = do
   input <- minput
   return $ product . take 2 . fst . fst . hashfold . toInts $ input
