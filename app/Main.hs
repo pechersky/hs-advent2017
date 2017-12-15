@@ -16,4 +16,5 @@ import Dec13
 import Dec14
 
 main :: IO ()
-main = return ()
+main = do
+  return ()
