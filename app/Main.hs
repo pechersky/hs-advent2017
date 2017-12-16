@@ -15,6 +15,7 @@ import Dec12
 import Dec13
 import Dec14
 import Dec15
+import AOCommon
 
 main :: IO ()
 main = do
