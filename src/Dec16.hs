@@ -20,9 +20,9 @@ data Command = Spin Int | Swap Int Int | Partner Program Program
   deriving Show
 
 parseCommand :: Parser Command
-parseCommand = Spin    <$> (char 's' *> decimal)
-            <|> Swap    <$> (char 'x' *> decimal <* char '/') <*> decimal
-            <|> Partner <$> (char 'p' *> anyChar <* char '/') <*> anyChar
+parseCommand = Spin    <$ char 's' <*> decimal
+           <|> Swap    <$ char 'x' <*> decimal <* char '/' <*> decimal
+           <|> Partner <$ char 'p' <*> anyChar <* char '/' <*> anyChar
 
 runCommand :: Programs -> Command -> Programs
 runCommand programs command = case command of
