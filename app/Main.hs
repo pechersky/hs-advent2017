@@ -1,5 +1,7 @@
 module Main where
 
+import AOCommon
+
 import Dec01
 import Dec02
 import Dec03
@@ -15,7 +17,8 @@ import Dec12
 import Dec13
 import Dec14
 import Dec15
-import AOCommon
+import Dec16
+import Dec17
 
 main :: IO ()
 main = do

@@ -30,7 +30,8 @@ library
                      , linear
                      , megaparsec >=6.0
                      , parallel
-  exposed-modules:     Dec01
+  exposed-modules:     AOCommon
+                     , Dec01
                      , Dec02
                      , Dec03
                      , Dec04
@@ -45,7 +46,16 @@ library
                      , Dec13
                      , Dec14
                      , Dec15
+                     , Dec16
+                     , Dec17
   default-language:    Haskell2010
+  default-extensions:  ViewPatterns
+                     , TupleSections
+                     , ScopedTypeVariables
+                     , BangPatterns
+                     , OverloadedStrings
+                     , TypeApplications
+                     , NumDecimals
 
 executable hs-advent2017-exe
   hs-source-dirs:      app
@@ -55,6 +65,13 @@ executable hs-advent2017-exe
                      , hs-advent2017
                      , criterion
   default-language:    Haskell2010
+  default-extensions:  ViewPatterns
+                     , TupleSections
+                     , ScopedTypeVariables
+                     , BangPatterns
+                     , OverloadedStrings
+                     , TypeApplications
+                     , NumDecimals
 
 test-suite hs-advent2017-test
   type:                exitcode-stdio-1.0
