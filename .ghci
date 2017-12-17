@@ -1,1 +1,7 @@
 :set -XOverloadedStrings
+:set +t +s
+:module +Data.List
+:module +Text.Megaparsec
+:module +Text.Megaparsec.Char
+:module +Text.Megaparsec.Char.Lexer
+:set prompt "$  "
