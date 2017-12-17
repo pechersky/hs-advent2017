@@ -17,4 +17,4 @@ parseInput p input = do
 parseLines :: String -> Parser a -> IO [a]
 parseLines filepath p = do
   input <- readFile filepath
-  parseInput (many (p <* optional newline) <* optional eof) input
+  parseInput (p `sepEndBy1` newline) input
