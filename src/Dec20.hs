@@ -33,7 +33,7 @@ parseInput :: Parser Point
 parseInput = Point <$ string "p=" <*> parseVec <* string ", v=" <*> parseVec <* string ", a=" <*> parseVec
   where
     parseVec :: Parser Vec
-    parseVec = V3 <$ char '<' <*> int <* char ',' <*> int <* char ',' <*> int <* char '>'
+    parseVec = V3 <$ "<" <*> int <* "," <*> int <* "," <*> int <* ">"
     int = (L.signed space (L.decimal))
 
 updatePoints :: [Point] -> [Point]

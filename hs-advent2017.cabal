@@ -28,7 +28,7 @@ library
                      , lens
                      , split
                      , linear
-                     , megaparsec >=6.0
+                     , megaparsec >=6.3
                      , parallel
   exposed-modules:     AOCommon
                      , Dec01
