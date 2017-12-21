@@ -4,6 +4,7 @@ module Dec20 where
 
 import Data.List
 import Data.Function
+import Data.Ord
 
 import Control.Lens
 
@@ -25,7 +26,7 @@ instance Eq Point where
   (==) = (==) `on` _pos
 
 instance Ord Point where
-  compare = compare `on` _pos
+  compare = comparing _pos
 
 makeClassy ''Point
 
@@ -45,7 +46,7 @@ updatePoints = fmap update
         intprop = prop & vel +~ (_accel prop)
 
 trackPoints :: [Point] -> Int
-trackPoints = fst . minimumBy (compare `on` snd) . zip [0..] . fmap l1dist
+trackPoints = fst . minimumBy (comparing snd) . zip [0..] . fmap l1dist
   where
     l1dist :: Point -> Int
     l1dist = sum . fmap abs . _pos
