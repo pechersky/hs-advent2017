@@ -46,9 +46,13 @@ library
                      , Dec13
                      , Dec14
                      , Dec15
+                     , Dec16
                      , Dec17
                      , Dec18
                      , Dec19
+                     , Dec20
+                     , Dec21
+                     , Dec22
   default-language:    Haskell2010
   default-extensions:  ViewPatterns
                      , TupleSections
