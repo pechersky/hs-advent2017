@@ -25,24 +25,24 @@ select :: [a] -> [(a, [a])]
 select [] = []
 select (x:xs) = (x,xs) : [(y,x:ys) | (y,ys) <- select xs]
 
+-- build bridges by prepending each next link, so '0' has to be in the snd position
 bridges :: StateT ([(Int, Int)], [(Int, Int)]) [] (Int, Int)
 bridges = do
   (avail, used) <- get
   (p0, ps) <- lift $ select avail
-  guard $ case used of
-            [] -> fst p0 == 0 || snd p0 == 0
-            (p:_) -> match p0 p
   let p0' = case used of
-              [] -> if fst p0 == 0 then swap p0 else p0
-              (p:_) -> if match' p0 p
+              [] -> if snd p0 == 0 then p0 else swap p0
+              (p:_) -> if match p0 p
                         then p0
                         else (swap p0)
+  guard $ case used of
+            [] -> snd p0' == 0
+            (p:_) -> match p0' p
   put (ps, p0':used)
   return $ p0'
     where
-      match a b = match' a b || match' (swap a) b
-      match' :: (Int, Int) -> (Int, Int) -> Bool
-      match' (px, py) (x,y) = py == x
+      match :: (Int, Int) -> (Int, Int) -> Bool
+      match (px, py) (x,y) = py == x
 
 strength :: (Int, Int) -> Int
 strength (x,y) = x + y
