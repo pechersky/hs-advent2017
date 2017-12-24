@@ -30,6 +30,7 @@ library
                      , linear
                      , megaparsec >=6.3
                      , parallel
+                     , monad-loops
   exposed-modules:     AOCommon
                      , Dec01
                      , Dec02
@@ -53,6 +54,8 @@ library
                      , Dec20
                      , Dec21
                      , Dec22
+                     , Dec23
+                     , Dec24
   default-language:    Haskell2010
   default-extensions:  ViewPatterns
                      , TupleSections
