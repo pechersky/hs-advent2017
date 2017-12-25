@@ -56,6 +56,7 @@ library
                      , Dec22
                      , Dec23
                      , Dec24
+                     , Dec25
   default-language:    Haskell2010
   default-extensions:  ViewPatterns
                      , TupleSections

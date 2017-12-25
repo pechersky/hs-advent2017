@@ -26,6 +26,7 @@ import Dec21
 import Dec22
 import Dec23
 import Dec24
+import Dec25
 
 main :: IO ()
 main = do
