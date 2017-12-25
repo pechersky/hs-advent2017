@@ -11,6 +11,7 @@ import qualified Data.IntMap.Lazy as IM
 import qualified Data.Set as S
 
 import Text.Megaparsec
+import Text.Megaparsec.Perm
 import Text.Megaparsec.Char
 import Text.Megaparsec.Char.Lexer as L
 import AOCommon (Parser, parseInput)
@@ -26,27 +27,25 @@ import Data.Tuple
 day25file :: String
 day25file = "src/day25input1.txt"
 
-parseFile :: String -> (Char, Int, MInstr)
-parseFile (lines->b:p:ls) = ((head $ last $ words b) ,
-                               (read $ head $ reverse $ init $ words p) ,
-                               foldr M.union M.empty (go ls))
+parseInstr :: Parser (Char, Int, MInstr)
+parseInstr = (,,) <$ "Begin in state " <*> anyChar
+                  <*> skipSomeTill anyChar decimal
+                  <*  skipSomeTill anyChar newline
+                  <*> (foldr M.union M.empty <$> some (parseMI <* "." <* (optional newline)))
+                  <*  eof
   where
-    go [] = []
-    go (_:s:l0:v0:m0:s0:l1:v1:m1:s1:ls) = M.singleton (head $ last $ words s) (M.fromList [
-                                            ((read $ f $ last $ words l0), (
-                                            (read $ f $ last $ words v0),
-                                            (f $ last $ words m0),
-                                            (head $ last $ words s0))) ,
-                                           ((read $ f $ last $ words l1), (
-                                            (read $ f $ last $ words v1),
-                                            (f $ last $ words m1),
-                                            (head $ last $ words s1)))]) : go ls
-    go _ = []
-    f = filter isAlphaNum
+    parseMI :: Parser MInstr
+    parseMI = M.singleton <$ newline <* "In state " <*> anyChar
+                          <*> (M.union <$> parseMove <*> parseMove)
+    parseMove :: Parser (M.Map Int (Int, String, Char))
+    parseMove =  M.singleton <$> skipSomeTill anyChar decimal
+                             <*> parseBlock
+    parseBlock :: Parser (Int, String, Char)
+    parseBlock = (,,) <$> skipSomeTill anyChar decimal
+                      <*> skipSomeTill anyChar (choice ["left", "right"])
+                      <*  skipSomeTill anyChar "state " <*> anyChar
 
 
-type SInstr = (Char, Instr, Instr)
-type Instr = (Int, Int, String, Char)
 type MInstr = M.Map Char (M.Map Int (Int, String, Char))
 
 runSet :: MInstr -> (Char, Int, IM.IntMap Int) -> (Char, Int, IM.IntMap Int)
@@ -65,6 +64,5 @@ runSet instructions (!state, !cursor, !tape) = (state', cursor', tape')
 
 day25answer1 = do
   input <- readFile day25file
-  (startState, numSteps, instrs) <- return $ parseFile input
-  {-return $ sum $ evalState (replicateM numSteps (runTape instrs)) (startState, tapeOf 0)-}
+  (startState, numSteps, instrs) <- parseInput parseInstr input
   return $ sum . IM.elems . (\(_,_,x) -> x) . (!! numSteps) $ iterate (runSet instrs) (startState, 0, IM.empty)
