@@ -18,3 +18,6 @@ parseLines :: String -> Parser a -> IO [a]
 parseLines filepath p = do
   input <- readFile filepath
   parseInput (p `sepEndBy1` newline) input
+
+iterate' :: (a -> a) -> a -> [a]
+iterate' f x = let x' = f x in x' `seq` (x : iterate' f x')

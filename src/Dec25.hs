@@ -13,7 +13,7 @@ import Control.Applicative
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import Text.Megaparsec.Char.Lexer as L
-import AOCommon (Parser, parseInput)
+import AOCommon (Parser, parseInput, iterate')
 
 
 day25file :: String
@@ -70,7 +70,7 @@ runSet instructions (!state, !cursor, !tape) = (state', cursor', tape')
 day25answer1 = do
   input <- readFile day25file
   (startState, numSteps, instrs) <- parseInput parseInstr $ filter (not . isPunctuation) input
-  return $ sum . IM.elems . (\(_,_,x) -> x) . (!! numSteps) $ iterate (runSet instrs) (startState, 0, IM.empty)
+  return $ sum . IM.elems . (\(_,_,x) -> x) . (!! numSteps) $ iterate' (runSet instrs) (startState, 0, IM.empty)
 
 
 data Tape a = Tape {_lefts :: [a], _curr :: a, _rights :: [a], _bounds :: !(Int, Int)}
@@ -106,4 +106,4 @@ sumTape Tape{..} = sum (take (fst _bounds) _lefts) + _curr + sum (take (snd _bou
 day25answer1b = do
   input <- readFile day25file
   (startState, numSteps, instrs) <- parseInput parseInstr $ filter (not . isPunctuation) input
-  return $ sumTape . snd . (!! numSteps) $ iterate (runTape instrs) (startState, tapeOf 0)
+  return $ sumTape . snd . (!! numSteps) $ iterate' (runTape instrs) (startState, tapeOf 0)
