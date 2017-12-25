@@ -49,40 +49,6 @@ type SInstr = (Char, Instr, Instr)
 type Instr = (Int, Int, String, Char)
 type MInstr = M.Map Char (M.Map Int (Int, String, Char))
 
-data Tape a = Tape [a] a [a]
-  deriving (Functor)
-
-instance Show a => Show (Tape a) where
-  show (Tape ls x rs) = show (reverse (take 3 ls)) ++ " " ++ show x ++ " " ++ show (take 3 rs)
-
-tapeOf :: a -> Tape a
-tapeOf a = Tape (repeat a) a (repeat a)
-
-moveL (Tape (l:ls) x (rs)) = Tape ls l (x:rs)
-moveR (Tape (ls) x (r:rs)) = Tape (x:ls) r rs
-
-setTape a (Tape ls _ rs) = Tape ls a rs
-access (Tape ls a rs) = a
-
-startTape :: Tape Int
-startTape = tapeOf 0
-
-runTape :: MInstr -> ST.State (Char, Tape Int) Int
-runTape instructions = do
-  (char, tape) <- get
-  let instr = instructions M.! char
-      curr = access tape
-  let (next, movestr, nextstate) = instr M.! curr
-      move = case movestr of
-              "left" -> moveL
-              "right" -> moveR
-              _ -> error "not a move"
-  put (nextstate, (move . setTape next) tape)
-  let retval = if next == curr
-                then 0
-                else if next == 1 then 1 else (negate 1)
-  return retval
-
 runSet :: MInstr -> (Char, Int, IM.IntMap Int) -> (Char, Int, IM.IntMap Int)
 runSet instructions (!state, !cursor, !tape) = (state', cursor', tape')
   where
