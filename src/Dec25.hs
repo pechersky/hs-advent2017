@@ -1,5 +1,6 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module Dec25 where
 
@@ -70,3 +71,39 @@ day25answer1 = do
   input <- readFile day25file
   (startState, numSteps, instrs) <- parseInput parseInstr $ filter (not . isPunctuation) input
   return $ sum . IM.elems . (\(_,_,x) -> x) . (!! numSteps) $ iterate (runSet instrs) (startState, 0, IM.empty)
+
+
+data Tape a = Tape {_lefts :: [a], _curr :: a, _rights :: [a], _bounds :: !(Int, Int)}
+  deriving (Functor)
+
+instance (Show a) => Show (Tape a)
+  where
+    show Tape{..} = show (reverse (take 3 _lefts)) ++ " " ++ show _curr ++ " " ++ show (take 3 _rights) ++ " " ++ show _bounds
+
+tapeOf :: a -> Tape a
+tapeOf a = Tape (repeat a) a (repeat a) (0,0)
+
+moveL, moveR :: Tape a -> Tape a
+moveL (Tape (l:ls) x rs (!bl, !br)) = Tape ls l (x:rs) (max 0 (bl-1), max 0 (br+1))
+moveR (Tape ls x (r:rs) (!bl, !br)) = Tape (x:ls) r rs (max 0 (bl+1), max 0 (br-1))
+
+setTape :: Tape a -> a -> Tape a
+setTape Tape{..} a = Tape _lefts a _rights _bounds
+
+runTape :: MInstr -> (PState, Tape Value) -> (PState, Tape Value)
+runTape instructions (!state, !tape) = (state', tape')
+  where
+    instr = instructions M.! state
+    curr = _curr tape
+    (next, move, state') = instr M.! curr
+    tape' = ($ setTape tape next) $ case move of
+                                      MLeft  -> moveL
+                                      MRight -> moveR
+
+sumTape :: Num a => Tape a -> a
+sumTape Tape{..} = sum (take (fst _bounds) _lefts) + _curr + sum (take (snd _bounds) _rights)
+
+day25answer1b = do
+  input <- readFile day25file
+  (startState, numSteps, instrs) <- parseInput parseInstr $ filter (not . isPunctuation) input
+  return $ sumTape . snd . (!! numSteps) $ iterate (runTape instrs) (startState, tapeOf 0)
